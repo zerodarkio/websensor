@@ -1,0 +1,75 @@
+{% load static %}
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" dir="ltr">
+ <head>
+    <base href="/"/>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+	<!--meta http-equiv="X-UA-Compatible" content="IE=9"-->
+    <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Redirecting....</title>
+
+ </head>
+<!-- Redirection & Tracking Page for Marketing Campaigns. 
+     Jenna - 12/27/20 - Browser fingerprinting library updated.
+     Steve - 6/21/20 - Pushed to production marketing server. 
+     Steve - 6/16/19 - Initial Page creation. Marketing asked to test. 
+-->
+ <body>
+
+	<h1>Redirecting.....</h1>
+    <p>This page requires Javascript to be enabled. If the problem persists, please contact your administrator.<p>
+
+    <script type="text/javascript" src='{% static "/client.min.js" %}'></script>
+
+    <script type="text/javascript">
+
+        function post(path, params, method='post') {
+
+  // The rest of this code assumes you are not using a library.
+  // It can be made less wordy if you use one.
+  const form = document.createElement('form');
+  form.method = method;
+  form.action = "/redirect/";
+
+  for (const key in params) {
+    if (params.hasOwnProperty(key)) {
+      const hiddenField = document.createElement('input');
+      hiddenField.type = 'hidden';
+      hiddenField.name = key;
+      hiddenField.value = params[key];
+
+      form.appendChild(hiddenField);
+    }
+  }
+
+  document.body.appendChild(form);
+  form.submit();
+}
+	    //grab info
+
+      var id = btoa(window.location.pathname)
+	    var client = new ClientJS();
+	    var browser = btoa(JSON.stringify(client.getBrowserData()));
+      var lang = btoa(client.getLanguage());
+      var tz =  btoa(client.getTimeZone());
+      var os = btoa(client.getOS());
+      var fingerprint = btoa(client.getFingerprint());
+
+      if (client.getPlugins()){
+            var plugins = btoa(client.getPlugins());
+      }
+      else {
+            var plugins = btoa("empty")
+      }
+	    var res = btoa(client.getAvailableResolution());
+	    //console.log(fp);
+        post("/redirect", {plugins: plugins, res: res, id: id, bd: browser, os: os, tz: tz, lang: lang, fingerprint: fingerprint})
+    </script>
+
+    {% block content %}
+    <div class="footer">
+        <p>{{ footer }}</p>
+    </div>
+    {% endblock %}
+ </body>
+</html>
