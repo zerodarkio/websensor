@@ -246,12 +246,22 @@ def handler404(request, exception,template_name="capture/response.html"):
         response["Content-Type"] = defaults.default_response_type + str("; charset=utf-8")
         response.status_code = defaults.default_response_code
         return response
+
+    # Check Source IP matches ignore
+    if tbl_ignore.objects.filter(ip__iexact=ip).count() >= 1:               
+        template_code = defaults.default_html
+        context = {'template_code': template_code}
+        template = loader.get_template(template_name)
+        response = HttpResponse(template.render(context, request))
+        response["Content-Type"] = defaults.default_response_type + str("; charset=utf-8")
+        response.status_code = defaults.default_response_code
+        return response
+
+    # Check User agent matches ignore
     
     # Grab all Urls    
     urls = tbl_url.objects.all()
-    # Check Source IP matches ignore
-
-    # Check User agent matches ignore
+    
 
     #### Honey URL Checks ####
 
