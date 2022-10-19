@@ -185,7 +185,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     
     # Grab URL with and without Parameters
     url_Requested = str(request.get_full_path_info())
-    url_Requested2 = request.path_info
+    url_Requested2 = request.path_info # with get parameters
 
     # Check if its an Assets URL - Put here to reduce load.
     if url_Requested.split("/")[1] == "assetss":
@@ -200,21 +200,25 @@ def handler404(request, exception,template_name="capture/response.html"):
    
     # Host
     try:
-        user_agent = request.META['HTTP_HOST']
+        host = request.META['HTTP_HOST']
     except Exception as e:
         print("[!] Error getting Host Header")
+        host = ""
     
     # User Agent
     try:
         user_agent = request.META['HTTP_USER_AGENT']
     except Exception as e:
         print("[!] Error getting User Agent Header")
+        user_agent = ""
     
     # Grab Raw Headers 
     try:
         Request_Headers = str(request.headers)
     except Exception as e:
         print("[!] Failed to pull headers:" + str(e))
+        Request_Headers = ""
+
 
     # TODO - Check for GET Parameters
     get_json = ""
@@ -356,12 +360,6 @@ def handler404(request, exception,template_name="capture/response.html"):
     response["Content-Type"] = url_qs.response_type# + str("; charset=utf-8")
     response.status_code = response_code #response_code
     return response
-
-# Check if what the URL is
-   # Known HoneyURL
-   # Unknown URL
-   # API # Need to make this an app by itself
-   # Admin URL # already handled in urls
 
 
 # Add in 500 Error Code Here 
