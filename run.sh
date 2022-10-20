@@ -1,3 +1,13 @@
+
+if [[ -z "${SERVER_HEADER}" ]]; then
+  HEADER="nginx"
+else
+  HEADER="${SERVER_HEADER}"
+fi
+
+echo 'Server header set to : "'$HEADER'"'
+echo 'gunicorn.SERVER = "'$HEADER'"' >> gunicorn-cfg.py
+
 python manage.py migrate --run-syncdb
 python manage.py makemigrations
 python manage.py migrate
