@@ -124,7 +124,7 @@ def register_sensor(sender, **kwargs):
 
 
 def getconfig():
-    from .models import tbl_sensor
+    from .models import tbl_sensor, tbl_url, tbl_ignore
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
     url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
