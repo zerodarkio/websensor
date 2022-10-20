@@ -10,8 +10,6 @@ import configparser
 
 from django.conf import settings
 
-from .views import 
-
 def register_sensor(sender, **kwargs):
     import urllib3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -146,7 +144,6 @@ def getconfig():
     # Pull urls 
     if data['urls']:
         urls = json.loads(data['urls'])
-        print(urls)
         for i in urls:
             tbl_url.objects.update_or_create(uuid=i['pk'],url_name=i['fields']['url_name'],url=i['fields']['url'],
                                              return_response=i['fields']['return_response'],
