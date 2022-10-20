@@ -11,9 +11,9 @@ Build the container into an image using the following command:
 ```sudo docker build --no-cache -t websensor .```
 
 
-Then execute it using the following command, which will create a mount point to store the sensor's configuration and then set it to listen on port 8888 on all interfaces.
+Then execute it using the following command, which will create a mount point to store the sensor's configuration and then set it to listen on port 8888 over http and 8443 for https on all interfaces.
 
-```docker run -v /Users/bob/mount:/websensor/mount -p 8888:80 websensor```
+```docker run -v /Users/bob/mount:/websensor/mount -p 8888:80 -p 8443:443 websensor```
 
 Once running you can obtain your sensor id and the external ip which used to register the sensor from `/Users/bob/mount/sensor.conf`. Once you have this file you adopt sensor when logged in via https://beta.zerodark.io/sensor/adopt. After a few mintues once the sensor has captured traffic it will start appearing your account.
 
@@ -35,3 +35,8 @@ Connection: keep-alive
 Server: bobs server
 ```
 
+### SSL Certificate
+
+By default the sensor will generate a self signed certificate if one is not provided. It will look for the presence of `server.pem` in the `/websensor/ssl`. To use your own certificate, combine your certificate and private key into one file called `server.pem`. You can then use a docker volume mount `-v` to use it.
+
+```docker run -v /Users/bob/mount:/websensor/mount -v /Users/bob/ssl:/websensor/ssl -p 8888:80 -p 8443:443 websensor```
