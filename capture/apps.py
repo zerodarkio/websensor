@@ -10,6 +10,8 @@ import configparser
 
 from django.conf import settings
 
+from .views import 
+
 def register_sensor(sender, **kwargs):
     import urllib3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -34,6 +36,8 @@ def register_sensor(sender, **kwargs):
             tbl_sensor.objects.update_or_create(sensor_id=sen_id, sensor_name=sen_name,
                                           sensor_type=sen_proto, sensor_web_port=sen_port,
                                           sensor_key=sen_key, sensor_ip=sen_ip)
+
+            getconfig()
             exit()
 
     
@@ -113,10 +117,64 @@ def register_sensor(sender, **kwargs):
             config.set('config', 'sensor_key', sen_key)
             with open('/websensor/mount/sensor.conf', 'w') as configfile:
                 config.write(configfile)
+            getconfig()
         else:
             print(str(res.status_code))
             print("[!] Error in setting up sensor")
             exit()
+
+
+def getconfig():
+    defaults = tbl_sensor.objects.get()
+    print("[i] Checking for Config Changes")
+    url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
+    headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
+    #try:
+    x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
+    res = x.json()
+    data = json.loads(res)
+
+    try:
+        defaults.default_html = data['html']
+        defaults.default_response_code = data['res_code']
+        defaults.default_response_type = data['res_type']
+        defaults.default_redirect_link = data['redirect']
+    except:
+        print("defaults not found")
+    defaults.sensor_key = data['key']
+
+    # Pull urls 
+    if data['urls']:
+        urls = json.loads(data['urls'])
+        print(urls)
+        for i in urls:
+            tbl_url.objects.update_or_create(uuid=i['pk'],url_name=i['fields']['url_name'],url=i['fields']['url'],
+                                             return_response=i['fields']['return_response'],
+                                             response_cookie=i['fields']['response_cookie'],
+                                             response_header=i['fields']['response_header'],
+                                             response_html=i['fields']['response_html'],
+                                             response_code=i['fields']['response_code'],
+                                             redirect_url=i['fields']['redirect_url'],
+                                             response_type=i['fields']['response_type'])
+
+            headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
+            u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i['pk']) + "/ack"
+            u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            if u_res.status_code == 200:
+                defaults.sensor_key = str(u_res.text)
+    
+    if data['ignores']:
+        ignores = json.loads(data['ignores'])
+        
+        for i in ignores:
+            tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+            headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
+            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
+            ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
+            if ig_res.status_code == 200:
+                defaults.sensor_key = str(ig_res.text)
+
+        defaults.save()
 
 class CaptureConfig(AppConfig):
     name = 'capture'

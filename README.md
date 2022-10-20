@@ -27,7 +27,9 @@ Once running you can obtain your sensor id and the external ip which used to reg
 
 You can change the server header returned via passing the `SERVER_HEADER` environment varible 
 
-```docker run -e SERVER_HEADER="bobs server" -v /Users/bob/mount:/websensor/mount -p 8888:80 websensor```
+```
+docker run -e SERVER_HEADER="bobs server" -v /Users/bob/mount:/websensor/mount -p 8888:80 websensor
+```
 
 Now the server header will be set
 
