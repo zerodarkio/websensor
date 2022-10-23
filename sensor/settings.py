@@ -16,7 +16,11 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-CALLBACKAPI = "https://beta.zerodark.io"
+if os.environ.get("CALLBACKAPI"):
+    CALLBACKAPI = os.environ.get("CALLBACKAPI")
+else:
+    CALLBACKAPI = "https://beta.zerodark.io"
+    
 SENSOR_VERSION = 0.1
 
 # Quick-start development settings - unsuitable for production
