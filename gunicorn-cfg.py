@@ -8,4 +8,5 @@ workers = 1
 accesslog = '-'
 loglevel = 'debug'
 capture_output = True
+copy_env = true
 enable_stdio_inheritance = True
