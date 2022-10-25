@@ -16,11 +16,14 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-cbapi = os.environ["CALLBACKAPI"]
-print(cbapi)
-if cbapi:
-    CALLBACKAPI = os.environ["CALLBACKAPI"]
-else:
+try:
+    cbapi = os.environ["CALLBACKAPI"]
+    print(cbapi)
+    if cbapi != "":
+        CALLBACKAPI = os.environ["CALLBACKAPI"]
+    else:
+        CALLBACKAPI = "https://beta.zerodark.io"
+except:
     CALLBACKAPI = "https://beta.zerodark.io"
     
 SENSOR_VERSION = 0.1
