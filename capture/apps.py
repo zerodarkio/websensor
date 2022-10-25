@@ -99,10 +99,12 @@ def register_sensor(sender, **kwargs):
                                       sensor_type=sen_proto, sensor_web_port=sen_port,
                                       sensor_key=sen_key, sensor_ip=sen_ip)
             
+            print("***************************************************************************************")
             print("PLEASE USE THESE TO ADOPT YOUR SENSOR AT " + settings.CALLBACKAPI + "/sensor/adopt/")
             print("[i] SENSOR ID: " + str(sen_id))
             print("[i] EXTERNAL IP: " + sen_ip)
-            
+            print("***************************************************************************************")
+
             f = open("/websensor/mount/sensor.conf", "a")
             f.write("[config]")
             f.close()
@@ -132,8 +134,9 @@ def getconfig():
     #try:
     x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
     res = x.json()
+    print(res)
     data = json.loads(res)
-
+    
     try:
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
