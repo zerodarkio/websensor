@@ -1,5 +1,5 @@
 
-if [[ -z "${SERVER_HEADER}" ]]; then
+if -z "${SERVER_HEADER}"; then
   HEADER="nginx"
 else
   HEADER="${SERVER_HEADER}"
@@ -23,6 +23,10 @@ if ! [ -f "$FILE" ]; then
     # Create server PEM file
     cat /websensor/ssl/server.key /websensor/ssl/server.crt > /websensor/ssl/server.pem
 fi
+
+chown -R docker /websensor
+
+su - docker
 
 python manage.py migrate --run-syncdb
 python manage.py makemigrations

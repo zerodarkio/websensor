@@ -25,10 +25,7 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-USER docker
-
 # the start up script
 RUN chmod +x run.sh
 
 CMD ["sh", "-c", "/websensor/run.sh"]
-
