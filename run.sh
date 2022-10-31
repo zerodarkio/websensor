@@ -29,7 +29,7 @@ chmod -R 0755 /websensor/ssl
 
 su - docker
 
-export PYTHONWARNINGS=ignone 
+export PYTHONWARNINGS=ignore 
 
 python manage.py migrate --run-syncdb
 python manage.py makemigrations
