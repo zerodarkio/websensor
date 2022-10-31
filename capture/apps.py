@@ -134,7 +134,7 @@ def getconfig():
     #try:
     x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
     res = x.json()
-    print(res)
+    
     data = json.loads(res)
     
     try:
