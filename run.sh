@@ -24,7 +24,8 @@ if ! [ -f "$FILE" ]; then
     cat /websensor/ssl/server.key /websensor/ssl/server.crt > /websensor/ssl/server.pem
 fi
 
-chown -R docker /websensor
+chmod -R 0755 /websensor/mount
+chmod -R 0755 /websensor/ssl
 
 su - docker
 
