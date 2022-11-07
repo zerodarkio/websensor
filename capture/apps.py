@@ -105,9 +105,9 @@ def register_sensor(sender, **kwargs):
             print("[i] EXTERNAL IP: " + sen_ip)
             print("***************************************************************************************")
 
-            f = open("/websensor/mount/sensor.conf", "a")
-            f.write("[config]")
-            f.close()
+            #f = open("/websensor/mount/sensor.conf", "a")
+            #f.write("[config]")
+            #f.close()
             config = configparser.ConfigParser()
             config.read_file(open(r'/websensor/mount/sensor.conf'))
             config.set('config', 'sensor_id', sen_id)
