@@ -21,23 +21,26 @@ def register_sensor(sender, **kwargs):
     os.environ['CMDLINERUNNER_RUN_ONCE'] = 'True'
     from .models import tbl_sensor
     # Check if config file present
-    if os.path.isfile(r'/websensor/mount/sensor.conf'):
-        config = configparser.ConfigParser()
-        config.read_file(open(r'/websensor/mount/sensor.conf'))
-        sen_id = config.get('config', 'sensor_id')
-        if sen_id != "":
-            sen_key = config.get('config', 'sensor_key')
-            sen_name = config.get('config', 'sensor_name')
-            sen_ip = config.get('config', 'sensor_ip')
-            sen_port = config.get('config', 'sensor_port')
-            sen_proto = config.get('config', 'sensor_proto')
+    try:
+        if os.path.isfile(r'/websensor/mount/sensor.conf'):
+            config = configparser.ConfigParser()
+            config.read_file(open(r'/websensor/mount/sensor.conf'))
+            sen_id = config.get('config', 'sensor_id')
+            if sen_id != "":
+                sen_key = config.get('config', 'sensor_key')
+                sen_name = config.get('config', 'sensor_name')
+                sen_ip = config.get('config', 'sensor_ip')
+                sen_port = config.get('config', 'sensor_port')
+                sen_proto = config.get('config', 'sensor_proto')
 
-            tbl_sensor.objects.update_or_create(sensor_id=sen_id, sensor_name=sen_name,
-                                          sensor_type=sen_proto, sensor_web_port=sen_port,
-                                          sensor_key=sen_key, sensor_ip=sen_ip)
+                tbl_sensor.objects.update_or_create(sensor_id=sen_id, sensor_name=sen_name,
+                                              sensor_type=sen_proto, sensor_web_port=sen_port,
+                                              sensor_key=sen_key, sensor_ip=sen_ip)
 
-            getconfig()
-            exit()
+                getconfig()
+                exit()
+    except:
+        a = 0 
 
     
 
