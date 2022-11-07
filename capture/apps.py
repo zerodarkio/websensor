@@ -108,8 +108,14 @@ def register_sensor(sender, **kwargs):
             #f = open("/websensor/mount/sensor.conf", "a")
             #f.write("[config]")
             #f.close()
+
             config = configparser.ConfigParser()
             config.read_file(open(r'/websensor/mount/sensor.conf'))
+            sections = config.sections()
+            if "config" in sections:
+                print("Config section found")
+            else:
+                config.add_section('config')
             config.set('config', 'sensor_id', sen_id)
             config.set('config', 'sensor_name', sen_name)
             config.set('config', 'sensor_ip', sen_ip)
