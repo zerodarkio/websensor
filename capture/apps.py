@@ -108,12 +108,18 @@ def register_sensor(sender, **kwargs):
             print("[i] EXTERNAL IP: " + sen_ip)
             print("***************************************************************************************")
 
-            #f = open("/websensor/mount/sensor.conf", "a")
-            #f.write("[config]")
-            #f.close()
+            f = open("/websensor/mount/sensor.conf", "a")
+            f.write("[config]")
+            f.close()
 
             config = configparser.ConfigParser()
-            config.read_file(open(r'/websensor/mount/sensor.conf'))
+            try:
+                config.read_file(open(r'/websensor/mount/sensor.conf'))
+            except:
+                with open('/websensor/mount/sensor.conf', 'w') as file:
+                   pass
+                config.read_file(open(r'/websensor/mount/sensor.conf'))
+                
             sections = config.sections()
             if "config" in sections:
                 print("Config section found")
