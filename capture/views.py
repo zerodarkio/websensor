@@ -135,10 +135,10 @@ def index(request, template_name="capture/index.html"):
     response = handler404(request, exception)
     return response
 
-def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey_url_qs,Request_Headers,post_json,get_json):
+def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey_url_qs,Request_Headers,post_json,get_json,base_url):
     try:
         log = tbl_log(timestamp=timezone.now(),link_requested=url_Requested,
-                  src_ip=ip,user_agent=user_agent,
+                  src_ip=ip,user_agent=user_agent,request_url=base_url,
                   request_body=body, request_method=requestMethod, request_cookies=cookies,
                   src_sensor=defaults, honeyurl=honey_url_qs, request_headers=Request_Headers,
                   request_post_parameters=post_json,request_get_parameters=get_json)
@@ -185,7 +185,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     
     # Grab URL with and without Parameters
     url_Requested = str(request.get_full_path_info())
-    url_Requested2 = request.path_info # with get parameters
+    base_url = request.path_info # without get parameters
 
     # Check if its an Assets URL - Put here to reduce load.
     if url_Requested.split("/")[1] == "assetss":
@@ -272,13 +272,13 @@ def handler404(request, exception,template_name="capture/response.html"):
     if urls.filter(url__iexact=url_Requested).count() == 1:
         url_qs = urls.get(url__iexact=url_Requested)
         print("[i] URL hit is called:" + str(url_qs.url_name))
-    elif urls.filter(url__iexact=url_Requested2).count() == 1:
-        url_qs = urls.get(url__iexact=url_Requested2)
+    elif urls.filter(url__iexact=base_url).count() == 1:
+        url_qs = urls.get(url__iexact=base_url)
         print("[i] URL hit is called:" + str(url_qs.url_name))
     else:
         print("[i] Unknown URL hit:" + str(url_Requested))
         url_qs = type(None)()
-        logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json)
+        logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
         template_code = defaults.default_html
         print(template_code)
         context = {'template_code': template_code}

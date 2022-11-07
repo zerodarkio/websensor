@@ -50,7 +50,7 @@ def register_sensor(sender, **kwargs):
         if os.environ.get("SENSOR_NAME"):
             sen_name = os.environ.get("SENSOR_NAME")
         else:
-            sen_name = "intial name"
+            sen_name = "initial name"
         
         if os.environ.get("SENSOR_PORT"):
             sen_port = os.environ.get("SENSOR_PORT")

@@ -92,6 +92,9 @@ class tbl_log(models.Model):
     user_agent = models.CharField(max_length=2000,
                                 blank=True,
                                 help_text="Browser User agent")
+    request_url = models.TextField(max_length=50000,
+                                blank=True,
+                                help_text="requested url without parameters")
     request_body = models.TextField(max_length=50000,
                                 blank=True,
                                 help_text="Complete request body")

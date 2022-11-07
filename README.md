@@ -35,7 +35,7 @@ Now the server header will be set
 
 ```
 HTTP/1.1 200 OK
-Date: Thu, 20 Oct 2022 10:30:58 GMT
+Date: Thu, 20 Oct 2022 10:30:58 GMT	
 Content-Type: text/html; charset=utf-8
 Content-Length: 14
 Connection: keep-alive
