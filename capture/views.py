@@ -106,7 +106,7 @@ def getconfig():
     #return
 
 # hit via /sendLogs
-@background(schedule=60*3)
+@background(schedule=60*1)
 def sendLogs():
     print("Sending Logs")
     defaults = tbl_sensor.objects.get()

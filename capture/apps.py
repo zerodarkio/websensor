@@ -116,10 +116,10 @@ def register_sensor(sender, **kwargs):
             try:
                 config.read_file(open(r'/websensor/mount/sensor.conf'))
             except:
-                with open('/websensor/mount/sensor.conf', 'w') as file:
+                with open(r'/websensor/mount/sensor.conf', 'w') as file:
                    pass
                 config.read_file(open(r'/websensor/mount/sensor.conf'))
-                
+
             sections = config.sections()
             if "config" in sections:
                 print("Config section found")
