@@ -246,7 +246,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Check URL if ignore
     if tbl_ignore.objects.filter(url__iexact=url_Requested).count() >= 1:
         #print("[!] Ignore URL hit : " + str(url_Requested))                
-        template_code = base64.b64decode(defaults.default_html).decode()
+        template_code = base64.b64decode(str(defaults.default_html).encode()).decode()
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
         response = HttpResponse(template.render(context, request))
@@ -256,7 +256,7 @@ def handler404(request, exception,template_name="capture/response.html"):
 
     # Check Source IP matches ignore
     if tbl_ignore.objects.filter(ip__iexact=ip).count() >= 1:               
-        template_code = base64.b64decode(defaults.default_html).decode()
+        template_code = base64.b64decode(str(defaults.default_html).encode()).decode()
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
         response = HttpResponse(template.render(context, request))
@@ -282,7 +282,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         print("[i] Unknown URL hit:" + str(url_Requested))
         url_qs = type(None)()
         logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
-        template_code = base64.b64decode(defaults.default_html).decode()
+        template_code = base64.b64decode(str(defaults.default_html).encode()).decode()
         print(template_code)
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
@@ -334,7 +334,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         #return redirect(str(url_qs.redirect_url + "/") )
 
     # Return Response
-    template_code = base64.b64decode(url_qs.response_html).decode()
+    template_code = base64.b64decode(str(url_qs.response_html).encode()).decode()
     context = {'template_code': template_code,}
     template = loader.get_template(template_name)
     #return HttpResponse(template_code, content_type='image/png; charset=UTF-8')
