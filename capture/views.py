@@ -20,7 +20,7 @@ from uuid import UUID,uuid4
 import os
 import json
 import time
-
+import base64 
 import sys, traceback
 import requests
 import configparser
@@ -45,7 +45,7 @@ def update_conf(sen_key):
     else:
         print("[i] Sensor.conf not found, unable to write key.")
 
-@background(schedule=60*10)
+@background(schedule=60*3)
 def getconfig():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
@@ -106,7 +106,7 @@ def getconfig():
     #return
 
 # hit via /sendLogs
-@background(schedule=60*1)
+@background(schedule=60*3)
 def sendLogs():
     print("Sending Logs")
     defaults = tbl_sensor.objects.get()
@@ -121,6 +121,9 @@ def sendLogs():
     if x.status_code == 200:
         #delete the logs
         logs.delete()
+    if not Task.objects.filter(verbose_name="getconfig").exists():
+        getconfig(repeat=1,verbose_name="getconfig") 
+
     return
 
 @csrf_exempt
@@ -243,7 +246,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Check URL if ignore
     if tbl_ignore.objects.filter(url__iexact=url_Requested).count() >= 1:
         #print("[!] Ignore URL hit : " + str(url_Requested))                
-        template_code = defaults.default_html
+        template_code = base64.b64decode(defaults.default_html).decode()
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
         response = HttpResponse(template.render(context, request))
@@ -253,7 +256,7 @@ def handler404(request, exception,template_name="capture/response.html"):
 
     # Check Source IP matches ignore
     if tbl_ignore.objects.filter(ip__iexact=ip).count() >= 1:               
-        template_code = defaults.default_html
+        template_code = base64.b64decode(defaults.default_html).decode()
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
         response = HttpResponse(template.render(context, request))
@@ -279,7 +282,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         print("[i] Unknown URL hit:" + str(url_Requested))
         url_qs = type(None)()
         logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
-        template_code = defaults.default_html
+        template_code = base64.b64decode(defaults.default_html).decode()
         print(template_code)
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
@@ -319,10 +322,10 @@ def handler404(request, exception,template_name="capture/response.html"):
                   src_sensor=defaults, honeyurl=url_qs)
     log.save()
     if not Task.objects.filter(verbose_name="sendLogs").exists():
-        sendLogs(repeat=0, verbose_name="sendLogs")
+        sendLogs(repeat=1, verbose_name="sendLogs")
 
     if not Task.objects.filter(verbose_name="getconfig").exists():
-        getconfig(repeat=0,verbose_name="getconfig") 
+        getconfig(repeat=1,verbose_name="getconfig") 
 
     # Check if there is Redirct Response
     if url_qs.redirect_url:
@@ -331,7 +334,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         #return redirect(str(url_qs.redirect_url + "/") )
 
     # Return Response
-    template_code = url_qs.response_html
+    template_code = base64.b64decode(url_qs.response_html).decode()
     context = {'template_code': template_code,}
     template = loader.get_template(template_name)
     #return HttpResponse(template_code, content_type='image/png; charset=UTF-8')
