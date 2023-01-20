@@ -282,12 +282,12 @@ def handler404(request, exception,template_name="capture/response.html"):
         print("[i] Unknown URL hit:" + str(url_Requested))
         url_qs = type(None)()
         logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
-        template_code = base64.b64decode(str(defaults.default_html).encode()).decode()
+        template_code = base64.b64decode(str(defaults.default_html).encode())
         print(template_code)
         context = {'template_code': template_code}
         template = loader.get_template(template_name)
         response = HttpResponse(template.render(context, request))
-        response["Content-Type"] = defaults.default_response_type + str("; charset=utf-8")
+        response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
         return response
 
