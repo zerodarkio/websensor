@@ -121,7 +121,7 @@ def getconfig():
             
             ignore_list.append(str(i['ignore_id']))
             if str(i['ignore_id']) not in existing_ignores:
-                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=i['url'])
+                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=str(i['url']))
                 headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
                 ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
                 ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
@@ -213,7 +213,9 @@ def getconfig2():
             
             ignore_list.append(str(i['ignore_id']))
             if str(i['ignore_id']) not in existing_ignores:
-                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=i['url'])
+                print(str(i['url']))
+
+                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=str(i['url']))
                 headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
                 ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
                 ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
