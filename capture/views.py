@@ -68,7 +68,7 @@ def getconfig():
     # Pull urls 
     if data['urls']:
         urls = json.loads(data['urls'])
-        print(urls)
+        print(str(urls))
 
         existing_urls = tbl_url.objects.values_list('uuid', flat=True)
         for i in urls:
@@ -145,7 +145,7 @@ def getconfig2():
         print(urls)
         print(type(urls))
         existing_urls = tbl_url.objects.values_list('uuid', flat=True)
-        print("existing urls: " + str(existing_urls))
+        
         print(type(existing_urls))
         for i in urls:
             # need this to make a request for each url
@@ -154,12 +154,12 @@ def getconfig2():
             if i not in existing_urls:
                 print("[i] url not found and being added: " + str(i))
                 get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
-                print("[i] URL request = " + str(get_url))
+                
                 y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
                 get_url_res = y.json()
-                print('[i] get_url_res : ' + get_url_res)
+                
                 get_url_data = json.loads(get_url_res)
-                print('[i] get_url_data : ' + get_url_data)
+
                 for entry in get_url_data:
                     tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
                                                  return_response=entry['fields']['return_response'],
