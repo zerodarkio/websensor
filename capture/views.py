@@ -45,7 +45,7 @@ def update_conf(sen_key):
     else:
         print("[i] Sensor.conf not found, unable to write key.")
 
-@background(schedule=60*3)
+@background()
 def getconfig():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
@@ -111,30 +111,32 @@ def getconfig():
 
     if data['ignores']:
         existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
-        uuid_list = []
+        ignore_uuid_list = []
         for a in existing_ignores:
-            uuid_list.append(str(a))
+            ignore_uuid_list.append(str(a))
 
         ignores = json.loads(data['ignores'])
         ignore_list = []
         for i in ignores:
             
             ignore_list.append(str(i['ignore_id']))
-            if str(i['ignore_id']) not in existing_ignores:
+            if str(i['ignore_id']) not in ignore_uuid_list:
+
                 tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=str(i['url']))
                 headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
                 ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
                 ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("[i] Ignore already present")
+
         existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+
         for a in existing_ignores:
+            print(str(a))
+            print(ignore_list)
             if str(a) not in ignore_list:
                 print("[i] Ignore not found and being deleted: " + str(a))
                 tbl_url.objects.filter(uuid=a).delete()
-
-        
-
 
 @background()
 def getconfig2():
@@ -274,10 +276,10 @@ def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey
         log.save()
         print("[i] Saved request to logs")
         if not Task.objects.filter(verbose_name="sendLogs").exists():
-            sendLogs(repeat=0, verbose_name="sendLogs")
+            sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
 
         if not Task.objects.filter(verbose_name="getconfig").exists():
-            getconfig(repeat=0,verbose_name="getconfig") 
+            getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
         return
     except Exception as e:
         print("[!] Error logger failed: " + str(e))
@@ -323,7 +325,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
-        getconfig2()
+        getconfig2(repeat=Task.NEVER)
         template_code = base64.b64decode(str(defaults.default_html).encode())
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
