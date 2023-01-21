@@ -57,10 +57,12 @@ def getconfig():
     data = json.loads(res)
 
     try:
+        print("[i] Default HTML : " + str(data['html']))
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
         defaults.default_response_type = data['res_type']
         defaults.default_redirect_link = data['redirect']
+        defaults.save()
     except:
         print("defaults not found")
     defaults.sensor_key = data['key']
@@ -145,13 +147,16 @@ def getconfig2():
     data = json.loads(res)
 
     try:
+        print("[i] Default HTML : " + str(data['html']))
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
         defaults.default_response_type = data['res_type']
         defaults.default_redirect_link = data['redirect']
+        defaults.save()
     except:
         print("defaults not found")
     defaults.sensor_key = data['key']
+    defaults.save()
 
     # Pull urls 
     if data['urls']:
