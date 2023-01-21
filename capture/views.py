@@ -116,15 +116,14 @@ def getconfig():
             uuid_list.append(str(a))
 
         ignores = json.loads(data['ignores'])
-        print(str(" At ignores --------------------------------"))
         ignore_list = []
         for i in ignores:
-            print(str(i))
-            ignore_list.append(str(i['pk']))
-            if str(i['pk']) not in existing_ignores:
-                tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+            
+            ignore_list.append(str(i['ignore_id']))
+            if str(i['ignore_id']) not in existing_ignores:
+                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=i['url'])
                 headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
+                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
                 ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("[i] Ignore already present")
@@ -208,15 +207,15 @@ def getconfig2():
             uuid_list.append(str(a))
 
         ignores = json.loads(data['ignores'])
-        print(str(" At ignores --------------------------------"))
+        
         ignore_list = []
         for i in ignores:
-            print(str(i))
-            ignore_list.append(str(i['pk']))
-            if str(i['pk']) not in existing_ignores:
-                tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+            
+            ignore_list.append(str(i['ignore_id']))
+            if str(i['ignore_id']) not in existing_ignores:
+                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=i['url'])
                 headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
+                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
                 ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("[i] Ignore already present")
