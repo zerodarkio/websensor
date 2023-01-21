@@ -71,11 +71,15 @@ def getconfig():
         print(str(urls))
 
         existing_urls = tbl_url.objects.values_list('uuid', flat=True)
+        uuid_list = []
+        for a in existing_urls:
+            uuid_list.append(str(a))
+
         for i in urls:
             # need this to make a request for each url
             print("[i] id = " + str(i))
             # check if in db if so skip else pull
-            if i not in existing_urls:
+            if i not in uuid_list:
                 print("[i] url not found and being added: " + str(i))
                 get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
                 y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
@@ -114,7 +118,7 @@ def getconfig():
                 defaults.sensor_key = str(ig_res.text)
 
         defaults.save()
-        update_conf(str(defaults.sensor_key))
+        
 
 
 @background()
@@ -140,16 +144,15 @@ def getconfig2():
     # Pull urls 
     if data['urls']:
         urls = json.loads(data['urls'])
-        print(urls)
-        print(type(urls))
         existing_urls = tbl_url.objects.values_list('uuid', flat=True)
-        
+        uuid_list = []
+        for a in existing_urls:
+            uuid_list.append(str(a))
         print(type(existing_urls))
         for i in urls:
             # need this to make a request for each url
-            print("[i] id = " + str(i))
             # check if in db if so skip else pull
-            if i not in existing_urls:
+            if i not in uuid_list:
                 print("[i] url not found and being added: " + str(i))
                 get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
                 
@@ -171,7 +174,7 @@ def getconfig2():
                 u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             else:
-                print("url already present")
+                print("[i] url already present")
         existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls2:
             if str(ex_url) not in urls:
@@ -209,14 +212,11 @@ def sendLogs():
     logs = tbl_log.objects.all()
     # store them as json
     logs_json = serializers.serialize('json', logs)
-    print(logs_json)
     # send all logs
     x = requests.post(url, data = logs_json, timeout=5, verify=True)
     if x.status_code == 200:
         #delete the logs
         logs.delete()
-    if not Task.objects.filter(verbose_name="getconfig").exists():
-        getconfig(repeat=0,verbose_name="getconfig") 
 
     return
 
@@ -289,15 +289,10 @@ def handler404(request, exception,template_name="capture/response.html"):
         #print("assets hit")
         return HttpResponse("File Not Found", content_type="text/plain", status=404)
     
-    print(url_Requested + " - " + str(defaults.sensor_id) + "/get")
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
         getconfig2()
-
         template_code = base64.b64decode(str(defaults.default_html).encode())
-        print(template_code)
-        #context = {'template_code': template_code}
-        #template = loader.get_template(template_name)
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -352,11 +347,8 @@ def handler404(request, exception,template_name="capture/response.html"):
     ###### Ignore Checks #######    
 
     # Check URL if ignore
-    if tbl_ignore.objects.filter(url__iexact=url_Requested).count() >= 1:
-        #print("[!] Ignore URL hit : " + str(url_Requested))                
+    if tbl_ignore.objects.filter(url__iexact=url_Requested).count() >= 1:              
         template_code = base64.b64decode(str(defaults.default_html).encode())
-        #context = {'template_code': template_code}
-        #template = loader.get_template(template_name)
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -365,8 +357,6 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Check Source IP matches ignore
     if tbl_ignore.objects.filter(ip__iexact=ip).count() >= 1:               
         template_code = base64.b64decode(str(defaults.default_html).encode())
-        #context = {'template_code': template_code}
-        #template = loader.get_template(template_name)
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -391,9 +381,6 @@ def handler404(request, exception,template_name="capture/response.html"):
         url_qs = type(None)()
         logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
         template_code = base64.b64decode(str(defaults.default_html).encode())
-        print(template_code)
-        #context = {'template_code': template_code}
-        #template = loader.get_template(template_name)
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -414,7 +401,6 @@ def handler404(request, exception,template_name="capture/response.html"):
     if url_qs.response_header:
         print("[i] Setting header values")
         header_json = json.loads(url_qs.response_header)
-        print(header_json)
 
     
     # TODO - Check for Web Call Back Setting
@@ -437,15 +423,12 @@ def handler404(request, exception,template_name="capture/response.html"):
 
     # Check if there is Redirct Response
     if url_qs.redirect_url:
-        print(url_qs.redirect_url+ "/a")
+        print(url_qs.redirect_url + "/a")
         return HttpResponseRedirect(str(url_qs.redirect_url))
         #return redirect(str(url_qs.redirect_url + "/") )
 
     # Return Response
     response_data = base64.b64decode(str(url_qs.response_html).encode())
-    #context = {'template_code': template_code,}
-    #template = loader.get_template(template_name)
-    #return HttpResponse(template_code, content_type='image/png; charset=UTF-8')
     response = HttpResponse(response_data)
     
     # Try and Add the Headers to the Response
