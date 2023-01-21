@@ -97,13 +97,10 @@ def getconfig():
                 print("url already present")
         existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls2:
-            print(str(urls))
-            print(str(type(urls)))
-            print(str(type(ex_url)))
             if str(ex_url) not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
-                tbl_url.objects.filter(url=ex_url).delete()
+                tbl_url.objects.filter(uuid=ex_url).delete()
 
     if data['ignores']:
         ignores = json.loads(data['ignores'])
@@ -177,13 +174,10 @@ def getconfig2():
                 print("url already present")
         existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls2:
-            print(str(urls))
-            print(str(type(urls)))
-            print(str(type(ex_url)))
             if str(ex_url) not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
-                tbl_url.objects.filter(url=ex_url).delete()
+                tbl_url.objects.filter(uuid=ex_url).delete()
 
     if data['ignores']:
         ignores = json.loads(data['ignores'])
