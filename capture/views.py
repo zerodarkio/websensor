@@ -70,6 +70,15 @@ def getconfig():
         urls = json.loads(data['urls'])
         print(urls)
         for i in urls:
+            # need this to make a request for each url
+            pk = str(i['pk'])
+            print(pk)
+            # check if in db if so skip else pull
+            
+            headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
+            get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i['pk']) + "/"
+            get_res = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+
             tbl_url.objects.update_or_create(uuid=i['pk'],url_name=i['fields']['url_name'],url=i['fields']['url'],
                                              return_response=i['fields']['return_response'],
                                              response_cookie=i['fields']['response_cookie'],
@@ -84,7 +93,10 @@ def getconfig():
             u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             if u_res.status_code == 200:
                 defaults.sensor_key = str(u_res.text)
-    
+    if data['delete_urls']:
+        del_urls = json.loads(data['delete_urls'])
+        print(del_urls)
+
     if data['ignores']:
         ignores = json.loads(data['ignores'])
         
@@ -122,7 +134,7 @@ def sendLogs():
         #delete the logs
         logs.delete()
     if not Task.objects.filter(verbose_name="getconfig").exists():
-        getconfig(repeat=1,verbose_name="getconfig") 
+        getconfig(repeat=0,verbose_name="getconfig") 
 
     return
 
@@ -195,6 +207,20 @@ def handler404(request, exception,template_name="capture/response.html"):
         #print("assets hit")
         return HttpResponse("File Not Found", content_type="text/plain", status=404)
     
+
+    if url_Requested == str("/" + defaults.sensor_id + "/get"):
+        if not Task.objects.filter(verbose_name="getconfig").exists():
+            getconfig(repeat=0,verbose_name="getconfig") 
+
+        template_code = base64.b64decode(str(defaults.default_html).encode())
+        print(template_code)
+        #context = {'template_code': template_code}
+        #template = loader.get_template(template_name)
+        response = HttpResponse(template_code)
+        response["Content-Type"] = defaults.default_response_type
+        response.status_code = defaults.default_response_code
+        return response
+
     # Grab Request Body
     body = str(request.body)
     
