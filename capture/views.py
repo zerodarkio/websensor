@@ -208,7 +208,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         return HttpResponse("File Not Found", content_type="text/plain", status=404)
     
 
-    if url_Requested == str("/" + defaults.sensor_id + "/get"):
+    if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         if not Task.objects.filter(verbose_name="getconfig").exists():
             getconfig(repeat=0,verbose_name="getconfig") 
 
