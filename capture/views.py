@@ -45,7 +45,7 @@ def update_conf(sen_key):
     else:
         print("[i] Sensor.conf not found, unable to write key.")
 
-@background()
+@background(schedule=60*5)
 def getconfig():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
@@ -57,7 +57,6 @@ def getconfig():
     data = json.loads(res)
 
     try:
-        print("[i] Default HTML : " + str(data['html']))
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
         defaults.default_response_type = data['res_type']
@@ -138,7 +137,7 @@ def getconfig():
                 print("[i] Ignore not found and being deleted: " + str(a))
                 tbl_url.objects.filter(uuid=a).delete()
 
-@background()
+
 def getconfig2():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
@@ -150,7 +149,6 @@ def getconfig2():
     data = json.loads(res)
 
     try:
-        print("[i] Default HTML : " + str(data['html']))
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
         defaults.default_response_type = data['res_type']
@@ -276,9 +274,13 @@ def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey
         log.save()
         print("[i] Saved request to logs")
         if not Task.objects.filter(verbose_name="sendLogs").exists():
+            print("[i] Already have sendLogs waiting")
+        else:
             sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
 
-        if not Task.objects.filter(verbose_name="getconfig").exists():
+        if Task.objects.filter(verbose_name="getconfig").exists():
+            print("[i] Already have getconfig waiting")
+        else:
             getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
         return
     except Exception as e:
@@ -325,7 +327,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
-        getconfig2(repeat=Task.NEVER)
+        getconfig2()
         template_code = base64.b64decode(str(defaults.default_html).encode())
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
@@ -449,11 +451,7 @@ def handler404(request, exception,template_name="capture/response.html"):
                   request_method=requestMethod, request_cookies=cookies,
                   src_sensor=defaults, honeyurl=url_qs)
     log.save()
-    if not Task.objects.filter(verbose_name="sendLogs").exists():
-        sendLogs(repeat=1, verbose_name="sendLogs")
-
-    if not Task.objects.filter(verbose_name="getconfig").exists():
-        getconfig(repeat=1,verbose_name="getconfig") 
+     
 
     # Check if there is Redirct Response
     if url_qs.redirect_url:
