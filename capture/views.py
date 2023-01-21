@@ -114,7 +114,7 @@ def getconfig():
         update_conf(str(defaults.sensor_key))
 
 
-@background(interval=0)
+@background()
 def getconfig2():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
