@@ -64,6 +64,7 @@ def getconfig():
     except:
         print("defaults not found")
     defaults.sensor_key = data['key']
+    defaults.save()
 
     # Pull urls 
     if data['urls']:
@@ -107,17 +108,28 @@ def getconfig():
                 tbl_url.objects.filter(uuid=ex_url).delete()
 
     if data['ignores']:
-        ignores = json.loads(data['ignores'])
-        
-        for i in ignores:
-            tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
-            headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i) + "/ack"
-            ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
-            if ig_res.status_code == 200:
-                defaults.sensor_key = str(ig_res.text)
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+        uuid_list = []
+        for a in existing_ignores:
+            uuid_list.append(str(a))
 
-        defaults.save()
+        ignores = json.loads(data['ignores'])
+        ignore_list = []
+        for i in ignores:
+            ignore_list.append(str(i['pk']))
+            if str(i['pk']) not in existing_ignores:
+                tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+                headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
+                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i) + "/ack"
+                ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
+            else:
+                print("[i] Ignore already present")
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+        for a in existing_ignores:
+            if str(a) not in ignore_list:
+                print("[i] Ignore not found and being deleted: " + str(a))
+                tbl_url.objects.filter(uuid=a).delete()
+
         
 
 
@@ -183,18 +195,27 @@ def getconfig2():
                 tbl_url.objects.filter(uuid=ex_url).delete()
 
     if data['ignores']:
-        ignores = json.loads(data['ignores'])
-        
-        for i in ignores:
-            tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
-            headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
-            ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
-            if ig_res.status_code == 200:
-                defaults.sensor_key = str(ig_res.text)
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+        uuid_list = []
+        for a in existing_ignores:
+            uuid_list.append(str(a))
 
-        defaults.save()
-        update_conf(str(defaults.sensor_key))
+        ignores = json.loads(data['ignores'])
+        ignore_list = []
+        for i in ignores:
+            ignore_list.append(str(i['pk']))
+            if str(i['pk']) not in existing_ignores:
+                tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+                headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
+                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i) + "/ack"
+                ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
+            else:
+                print("[i] Ignore already present")
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+        for a in existing_ignores:
+            if str(a) not in ignore_list:
+                print("[i] Ignore not found and being deleted: " + str(a))
+                tbl_url.objects.filter(uuid=a).delete()
 
 
         # Once set and send server the IDs as confirmation
