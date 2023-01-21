@@ -91,7 +91,7 @@ def getconfig():
                                                  redirect_url=entry['fields']['redirect_url'],
                                                  response_type=entry['fields']['response_type'])
 
-                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i['pk']) + "/ack"
+                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
         for ex_url in existing_urls:
             if ex_url not in urls:
@@ -105,7 +105,7 @@ def getconfig():
         for i in ignores:
             tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
             headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
+            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i) + "/ack"
             ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
             if ig_res.status_code == 200:
                 defaults.sensor_key = str(ig_res.text)
@@ -114,7 +114,7 @@ def getconfig():
         update_conf(str(defaults.sensor_key))
 
 
-@background()
+@background(interval=0)
 def getconfig2():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
