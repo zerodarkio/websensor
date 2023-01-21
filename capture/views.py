@@ -95,7 +95,7 @@ def getconfig():
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("url already present")
-        
+        existing_urls = tbl_url.objects.values_list('uuid', flat=True)  
         for ex_url in existing_urls:
             print(str(urls))
             print(str(ex_url))
@@ -174,7 +174,7 @@ def getconfig2():
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("url already present")
-                
+        existing_urls = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls:
             print(str(urls))
             print(str(ex_url))
