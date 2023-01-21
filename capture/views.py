@@ -95,11 +95,12 @@ def getconfig():
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("url already present")
-        existing_urls = tbl_url.objects.values_list('uuid', flat=True)  
-        for ex_url in existing_urls:
+        existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
+        for ex_url in existing_urls2:
             print(str(urls))
-            print(str(ex_url))
-            if ex_url not in urls:
+            print(str(type(urls)))
+            print(str(type(ex_url)))
+            if str(ex_url) not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
                 tbl_url.objects.filter(url=ex_url).delete()
@@ -174,11 +175,12 @@ def getconfig2():
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             else:
                 print("url already present")
-        existing_urls = tbl_url.objects.values_list('uuid', flat=True)        
-        for ex_url in existing_urls:
+        existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
+        for ex_url in existing_urls2:
             print(str(urls))
-            print(str(ex_url))
-            if ex_url not in urls:
+            print(str(type(urls)))
+            print(str(type(ex_url)))
+            if str(ex_url) not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
                 tbl_url.objects.filter(url=ex_url).delete()
