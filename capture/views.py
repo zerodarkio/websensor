@@ -69,75 +69,7 @@ def getconfig():
     if data['urls']:
         urls = json.loads(data['urls'])
         print(urls)
-        
-        existing_urls = tbl_url.objects.values_list('uuid', flat=True)
-        for i in urls:
-            # need this to make a request for each url
-            print("[i] id = " + str(i))
-            # check if in db if so skip else pull
-            if i not in existing_urls:
-                print("[i] url not found and being added: " + str(i))
-                get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
-                y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
-                get_url_res = y.json()
-                get_url_data = json.loads(get_url_res)
-                for entry in get_url_data:
-                    tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
-                                                 return_response=entry['fields']['return_response'],
-                                                 response_cookie=entry['fields']['response_cookie'],
-                                                 response_header=entry['fields']['response_header'],
-                                                 response_html=entry['fields']['response_html'],
-                                                 response_code=entry['fields']['response_code'],
-                                                 redirect_url=entry['fields']['redirect_url'],
-                                                 response_type=entry['fields']['response_type'])
 
-                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
-                u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
-        for ex_url in existing_urls:
-            if ex_url not in urls:
-                print("[i] url not found and being deleted: " + str(ex_url))
-                # Delete the tbl_url_profile object for the url
-                tbl_url.objects.filter(url=ex_url).delete()
-
-    if data['ignores']:
-        ignores = json.loads(data['ignores'])
-        
-        for i in ignores:
-            tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
-            headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
-            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
-            ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
-            if ig_res.status_code == 200:
-                defaults.sensor_key = str(ig_res.text)
-
-        defaults.save()
-        update_conf(str(defaults.sensor_key))
-
-
-
-def getconfig2():
-    defaults = tbl_sensor.objects.get()
-    print("[i] Checking for Config Changes")
-    url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
-    headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
-    #try:
-    x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
-    res = x.json()
-    data = json.loads(res)
-
-    try:
-        defaults.default_html = data['html']
-        defaults.default_response_code = data['res_code']
-        defaults.default_response_type = data['res_type']
-        defaults.default_redirect_link = data['redirect']
-    except:
-        print("defaults not found")
-    defaults.sensor_key = data['key']
-
-    # Pull urls 
-    if data['urls']:
-        urls = json.loads(data['urls'])
-        print(urls)
         existing_urls = tbl_url.objects.values_list('uuid', flat=True)
         for i in urls:
             # need this to make a request for each url
@@ -182,13 +114,87 @@ def getconfig2():
         update_conf(str(defaults.sensor_key))
 
 
+@background(interval=0)
+def getconfig2():
+    defaults = tbl_sensor.objects.get()
+    print("[i] Checking for Config Changes")
+    url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
+    headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
+    #try:
+    x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
+    res = x.json()
+    data = json.loads(res)
+
+    try:
+        defaults.default_html = data['html']
+        defaults.default_response_code = data['res_code']
+        defaults.default_response_type = data['res_type']
+        defaults.default_redirect_link = data['redirect']
+    except:
+        print("defaults not found")
+    defaults.sensor_key = data['key']
+
+    # Pull urls 
+    if data['urls']:
+        urls = json.loads(data['urls'])
+        print(urls)
+        print(type(urls))
+        existing_urls = tbl_url.objects.values_list('uuid', flat=True)
+        print("existing urls: " + str(existing_urls))
+        print(type(existing_urls))
+        for i in urls:
+            # need this to make a request for each url
+            print("[i] id = " + str(i))
+            # check if in db if so skip else pull
+            if i not in existing_urls:
+                print("[i] url not found and being added: " + str(i))
+                get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
+                print("[i] URL request = " + str(get_url))
+                y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+                get_url_res = y.json()
+                print('[i] get_url_res : ' + get_url_res)
+                get_url_data = json.loads(get_url_res)
+                print('[i] get_url_data : ' + get_url_data)
+                for entry in get_url_data:
+                    tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
+                                                 return_response=entry['fields']['return_response'],
+                                                 response_cookie=entry['fields']['response_cookie'],
+                                                 response_header=entry['fields']['response_header'],
+                                                 response_html=entry['fields']['response_html'],
+                                                 response_code=entry['fields']['response_code'],
+                                                 redirect_url=entry['fields']['redirect_url'],
+                                                 response_type=entry['fields']['response_type'])
+
+                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
+                u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+        for ex_url in existing_urls:
+            if ex_url not in urls:
+                print("[i] url not found and being deleted: " + str(ex_url))
+                # Delete the tbl_url_profile object for the url
+                tbl_url.objects.filter(url=ex_url).delete()
+
+    if data['ignores']:
+        ignores = json.loads(data['ignores'])
+        
+        for i in ignores:
+            tbl_ignore.objects.update_or_create(ipk=i['pk'],ip=i['fields']['ip'],url=i['fields']['url'])
+            headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
+            ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['pk']) + "/ack"
+            ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
+            if ig_res.status_code == 200:
+                defaults.sensor_key = str(ig_res.text)
+
+        defaults.save()
+        update_conf(str(defaults.sensor_key))
+
+
         # Once set and send server the IDs as confirmation
     #except Exception as e:
     #    print("[!] Error on getconfig: " + str(e))
     #return
 
 # hit via /sendLogs
-@background(schedule=60*3)
+@background(schedule=60*2)
 def sendLogs():
     print("Sending Logs")
     defaults = tbl_sensor.objects.get()
@@ -280,8 +286,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     print(url_Requested + " - " + str(defaults.sensor_id) + "/get")
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
-        if not Task.objects.filter(verbose_name="getconfig2").exists():
-            getconfig2(repeat=0,verbose_name="getconfig2") 
+        getconfig2.apply()
 
         template_code = base64.b64decode(str(defaults.default_html).encode())
         print(template_code)
