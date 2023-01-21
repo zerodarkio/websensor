@@ -93,7 +93,12 @@ def getconfig():
 
                 u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            else:
+                print("url already present")
+        
         for ex_url in existing_urls:
+            print(str(urls))
+            print(str(ex_url))
             if ex_url not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
@@ -167,7 +172,12 @@ def getconfig2():
 
                 u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            else:
+                print("url already present")
+                
         for ex_url in existing_urls:
+            print(str(urls))
+            print(str(ex_url))
             if ex_url not in urls:
                 print("[i] url not found and being deleted: " + str(ex_url))
                 # Delete the tbl_url_profile object for the url
@@ -286,7 +296,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     print(url_Requested + " - " + str(defaults.sensor_id) + "/get")
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
-        getconfig2.apply()
+        getconfig2()
 
         template_code = base64.b64decode(str(defaults.default_html).encode())
         print(template_code)
