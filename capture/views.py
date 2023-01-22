@@ -273,7 +273,7 @@ def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey
                   request_post_parameters=post_json,request_get_parameters=get_json)
         log.save()
         print("[i] Saved request to logs")
-        if not Task.objects.filter(verbose_name="sendLogs").exists():
+        if Task.objects.filter(verbose_name="sendLogs").exists():
             print("[i] Already have sendLogs waiting")
         else:
             sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
