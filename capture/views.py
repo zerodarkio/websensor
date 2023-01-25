@@ -427,16 +427,21 @@ def handler404(request, exception,template_name="capture/response.html"):
         response_code = url_qs.response_code
     else:
         response_code = 200
-    
-    # Check if there is Response cookies to be set        
-    if url_qs.response_cookie:
-        print("[i] Setting cookie values")
-        cookie_json = json.loads(url_qs.response_cookie)
+    try: 
+        # Check if there is Response cookies to be set        
+        if url_qs.response_cookie:
+            print("[i] Setting cookie values")
+            cookie_json = json.loads(url_qs.response_cookie)
+    except:
+        print("[!] Invalid cookie json provided!")
     
     # Check if there is Response Headers to be set
-    if url_qs.response_header:
+    try:
+        if url_qs.response_header:
         print("[i] Setting header values")
         header_json = json.loads(url_qs.response_header)
+    except:
+        print("[!] Invalid header json provided!")
 
     
     # TODO - Check for Web Call Back Setting
