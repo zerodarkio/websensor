@@ -450,8 +450,8 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Check if there is Response Headers to be set
     try:
         if url_qs.response_header:
-        print("[i] Setting header values")
-        header_json = json.loads(url_qs.response_header)
+            print("[i] Setting header values")
+            header_json = json.loads(url_qs.response_header)
     except:
         print("[!] Invalid header json provided!")
 
