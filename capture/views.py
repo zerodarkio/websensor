@@ -328,7 +328,10 @@ def handler404(request, exception,template_name="capture/response.html"):
     if url_Requested == "/" + str(defaults.sensor_id) + "/get":
         print("Getting config...")
         getconfig2()
-        template_code = base64.b64decode(str(defaults.default_html).encode())
+        try:
+            template_code = base64.b64decode(str(defaults.default_html).encode())
+        except:
+            template_code = "Error"
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -384,7 +387,10 @@ def handler404(request, exception,template_name="capture/response.html"):
 
     # Check URL if ignore
     if tbl_ignore.objects.filter(url__iexact=url_Requested).count() >= 1:              
-        template_code = base64.b64decode(str(defaults.default_html).encode())
+        try:
+            template_code = base64.b64decode(str(defaults.default_html).encode())
+        except:
+            template_code = "Error"
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -392,7 +398,10 @@ def handler404(request, exception,template_name="capture/response.html"):
 
     # Check Source IP matches ignore
     if tbl_ignore.objects.filter(ip__iexact=ip).count() >= 1:               
-        template_code = base64.b64decode(str(defaults.default_html).encode())
+        try:
+            template_code = base64.b64decode(str(defaults.default_html).encode())
+        except:
+            template_code = "Error"
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
@@ -416,7 +425,10 @@ def handler404(request, exception,template_name="capture/response.html"):
         print("[i] Unknown URL hit:" + str(url_Requested))
         url_qs = type(None)()
         logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
-        template_code = base64.b64decode(str(defaults.default_html).encode())
+        try:
+            template_code = base64.b64decode(str(defaults.default_html).encode())
+        except:
+            template_code = "Error"
         response = HttpResponse(template_code)
         response["Content-Type"] = defaults.default_response_type
         response.status_code = defaults.default_response_code
