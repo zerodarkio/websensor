@@ -135,7 +135,7 @@ def getconfig():
             print(ignore_list)
             if str(a) not in ignore_list:
                 print("[i] Ignore not found and being deleted: " + str(a))
-                tbl_url.objects.filter(uuid=a).delete()
+                tbl_ignore.objects.filter(uuid=a).delete()
 
 
 def getconfig2():
