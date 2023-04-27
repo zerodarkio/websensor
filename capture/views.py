@@ -88,6 +88,35 @@ def getconfig():
             get_url_res = y.json()
             get_url_data = json.loads(get_url_res)
             for entry in get_url_data:
+                try:
+                    obj = tbl_url.objects.get(url=entry['fields']['url'])
+                    # Update the existing object
+                    obj.uuid = entry['pk']
+                    obj.url_name = entry['fields']['url_name']
+                    obj.return_response = entry['fields']['return_response']
+                    obj.response_cookie = entry['fields']['response_cookie']
+                    obj.response_header = entry['fields']['response_header']
+                    obj.response_html = entry['fields']['response_html']
+                    obj.response_code = entry['fields']['response_code']
+                    obj.redirect_url = entry['fields']['redirect_url']
+                    obj.response_type = entry['fields']['response_type']
+                    # Save the changes
+                    obj.save()
+                except ObjectDoesNotExist:
+                    # Create a new object
+                    obj = tbl_url.objects.create(
+                        uuid=entry['pk'],
+                        url_name=entry['fields']['url_name'],
+                        url=entry['fields']['url'],
+                        return_response=entry['fields']['return_response'],
+                        response_cookie=entry['fields']['response_cookie'],
+                        response_header=entry['fields']['response_header'],
+                        response_html=entry['fields']['response_html'],
+                        response_code=entry['fields']['response_code'],
+                        redirect_url=entry['fields']['redirect_url'],
+                        response_type=entry['fields']['response_type']
+                    )
+                """
                 tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
                                              return_response=entry['fields']['return_response'],
                                              response_cookie=entry['fields']['response_cookie'],
@@ -96,7 +125,7 @@ def getconfig():
                                              response_code=entry['fields']['response_code'],
                                              redirect_url=entry['fields']['redirect_url'],
                                              response_type=entry['fields']['response_type'])
-
+                """
             u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
             u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             #else:
@@ -180,7 +209,35 @@ def getconfig2():
             get_url_data = json.loads(get_url_res)
 
             for entry in get_url_data:
-                tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
+                try:
+                    obj = tbl_url.objects.get(url=entry['fields']['url'])
+                    # Update the existing object
+                    obj.uuid = entry['pk']
+                    obj.url_name = entry['fields']['url_name']
+                    obj.return_response = entry['fields']['return_response']
+                    obj.response_cookie = entry['fields']['response_cookie']
+                    obj.response_header = entry['fields']['response_header']
+                    obj.response_html = entry['fields']['response_html']
+                    obj.response_code = entry['fields']['response_code']
+                    obj.redirect_url = entry['fields']['redirect_url']
+                    obj.response_type = entry['fields']['response_type']
+                    # Save the changes
+                    obj.save()
+                except ObjectDoesNotExist:
+                    # Create a new object
+                    obj = tbl_url.objects.create(
+                        uuid=entry['pk'],
+                        url_name=entry['fields']['url_name'],
+                        url=entry['fields']['url'],
+                        return_response=entry['fields']['return_response'],
+                        response_cookie=entry['fields']['response_cookie'],
+                        response_header=entry['fields']['response_header'],
+                        response_html=entry['fields']['response_html'],
+                        response_code=entry['fields']['response_code'],
+                        redirect_url=entry['fields']['redirect_url'],
+                        response_type=entry['fields']['response_type']
+                    )
+                """tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
                                              return_response=entry['fields']['return_response'],
                                              response_cookie=entry['fields']['response_cookie'],
                                              response_header=entry['fields']['response_header'],
@@ -188,7 +245,7 @@ def getconfig2():
                                              response_code=entry['fields']['response_code'],
                                              redirect_url=entry['fields']['redirect_url'],
                                              response_type=entry['fields']['response_type'])
-
+                """
             u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
             u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             #else:
