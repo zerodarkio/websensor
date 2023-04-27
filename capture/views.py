@@ -310,10 +310,10 @@ def handler404(request, exception,template_name="capture/response.html"):
         sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
 
     if Task.objects.filter(verbose_name="getconfig").exists():
-            print("[i] Already have getconfig waiting")
-        else:
-            print("[i] getconfig task added")
-            getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
+        print("[i] Already have getconfig waiting")
+    else:
+        print("[i] getconfig task added")
+        getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
 
     # Get Defaults
     defaults = tbl_sensor.objects.get()
