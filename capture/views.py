@@ -45,7 +45,7 @@ def update_conf(sen_key):
     else:
         print("[i] Sensor.conf not found, unable to write key.")
 
-@background(schedule=60*5)
+@background(schedule=60*3)
 def getconfig():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
@@ -81,26 +81,26 @@ def getconfig():
             # need this to make a request for each url
             print("[i] id = " + str(i))
             # check if in db if so skip else pull
-            if i not in uuid_list:
-                print("[i] url not found and being added: " + str(i))
-                get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
-                y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
-                get_url_res = y.json()
-                get_url_data = json.loads(get_url_res)
-                for entry in get_url_data:
-                    tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
-                                                 return_response=entry['fields']['return_response'],
-                                                 response_cookie=entry['fields']['response_cookie'],
-                                                 response_header=entry['fields']['response_header'],
-                                                 response_html=entry['fields']['response_html'],
-                                                 response_code=entry['fields']['response_code'],
-                                                 redirect_url=entry['fields']['redirect_url'],
-                                                 response_type=entry['fields']['response_type'])
+            print("[i] update or create urls")
+            #if i not in uuid_list:    
+            get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
+            y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+            get_url_res = y.json()
+            get_url_data = json.loads(get_url_res)
+            for entry in get_url_data:
+                tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
+                                             return_response=entry['fields']['return_response'],
+                                             response_cookie=entry['fields']['response_cookie'],
+                                             response_header=entry['fields']['response_header'],
+                                             response_html=entry['fields']['response_html'],
+                                             response_code=entry['fields']['response_code'],
+                                             redirect_url=entry['fields']['redirect_url'],
+                                             response_type=entry['fields']['response_type'])
 
-                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
-                u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
-            else:
-                print("url already present")
+            u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
+            u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            #else:
+                #print("url already present")
         existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls2:
             if str(ex_url) not in urls:
@@ -170,29 +170,29 @@ def getconfig2():
         for i in urls:
             # need this to make a request for each url
             # check if in db if so skip else pull
-            if i not in uuid_list:
-                print("[i] url not found and being added: " + str(i))
-                get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
-                
-                y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
-                get_url_res = y.json()
-                
-                get_url_data = json.loads(get_url_res)
+            #if i not in uuid_list:
+            #    print("[i] url not found and being added: " + str(i))
+            get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
+            
+            y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+            get_url_res = y.json()
+            
+            get_url_data = json.loads(get_url_res)
 
-                for entry in get_url_data:
-                    tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
-                                                 return_response=entry['fields']['return_response'],
-                                                 response_cookie=entry['fields']['response_cookie'],
-                                                 response_header=entry['fields']['response_header'],
-                                                 response_html=entry['fields']['response_html'],
-                                                 response_code=entry['fields']['response_code'],
-                                                 redirect_url=entry['fields']['redirect_url'],
-                                                 response_type=entry['fields']['response_type'])
+            for entry in get_url_data:
+                tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
+                                             return_response=entry['fields']['return_response'],
+                                             response_cookie=entry['fields']['response_cookie'],
+                                             response_header=entry['fields']['response_header'],
+                                             response_html=entry['fields']['response_html'],
+                                             response_code=entry['fields']['response_code'],
+                                             redirect_url=entry['fields']['redirect_url'],
+                                             response_type=entry['fields']['response_type'])
 
-                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
-                u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
-            else:
-                print("[i] url already present")
+            u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
+            u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            #else:
+            #    print("[i] url already present")
         existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
         for ex_url in existing_urls2:
             if str(ex_url) not in urls:
@@ -235,7 +235,7 @@ def getconfig2():
     #return
 
 # hit via /sendLogs
-@background(schedule=60*2)
+@background(schedule=60*1)
 def sendLogs():
     print("Sending Logs")
     defaults = tbl_sensor.objects.get()
@@ -276,11 +276,13 @@ def logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,honey
         if Task.objects.filter(verbose_name="sendLogs").exists():
             print("[i] Already have sendLogs waiting")
         else:
+            print("[i] Creating sendlogs task")
             sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
 
         if Task.objects.filter(verbose_name="getconfig").exists():
             print("[i] Already have getconfig waiting")
         else:
+            print("[i] Creating getconfig task")
             getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
         return
     except Exception as e:
@@ -299,7 +301,20 @@ def get_client_ip(request):
 @csrf_exempt
 @csp_exempt
 def handler404(request, exception,template_name="capture/response.html"):
-    
+    print("--------------------------")
+    print("[i] 404 hit")
+    if Task.objects.filter(verbose_name="sendLogs").exists():
+        print("[i] Already have sendLogs waiting")
+    else:
+        print("[i] sendLogs task added")
+        sendLogs(repeat=Task.NEVER, verbose_name="sendLogs")
+
+    if Task.objects.filter(verbose_name="getconfig").exists():
+            print("[i] Already have getconfig waiting")
+        else:
+            print("[i] getconfig task added")
+            getconfig(repeat=Task.NEVER,verbose_name="getconfig") 
+
     # Get Defaults
     defaults = tbl_sensor.objects.get()
     redirect = str(defaults.default_redirect_link)
