@@ -348,7 +348,7 @@ def get_client_ip(request):
 @csp_exempt
 def handler404(request, exception,template_name="capture/response.html"):
     print("--------------------------")
-    print("[i] 404 hit")
+    print("[i] Handler hit")
     if Task.objects.filter(verbose_name="sendLogs").exists():
         print("[i] Already have sendLogs waiting")
     else:
@@ -421,6 +421,7 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Grab Raw Headers 
     try:
         Request_Headers = str(request.headers)
+        print(f"Headers from request: {Request_Headers}")
     except Exception as e:
         print("[!] Failed to pull headers:" + str(e))
         Request_Headers = ""
