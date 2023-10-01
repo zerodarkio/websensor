@@ -282,7 +282,7 @@ def sendLogs():
     except ObjectDoesNotExist:
         print("No default sensor object found.")
         return
-    all_logs = list(tbl_log.objects.all().order_by('id'))
+    all_logs = list(tbl_log.objects.all().order_by('date', 'timestamp'))
     while all_logs:
         batch_logs = all_logs[:3]
         all_logs = all_logs[3:]
