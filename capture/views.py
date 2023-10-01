@@ -118,16 +118,7 @@ def getconfig():
                         redirect_url=entry['fields']['redirect_url'],
                         response_type=entry['fields']['response_type']
                     )
-                """
-                tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
-                                             return_response=entry['fields']['return_response'],
-                                             response_cookie=entry['fields']['response_cookie'],
-                                             response_header=entry['fields']['response_header'],
-                                             response_html=entry['fields']['response_html'],
-                                             response_code=entry['fields']['response_code'],
-                                             redirect_url=entry['fields']['redirect_url'],
-                                             response_type=entry['fields']['response_type'])
-                """
+
             u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
             u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             #else:
@@ -199,10 +190,6 @@ def getconfig2():
             uuid_list.append(str(a))
         print(type(existing_urls))
         for i in urls:
-            # need this to make a request for each url
-            # check if in db if so skip else pull
-            #if i not in uuid_list:
-            #    print("[i] url not found and being added: " + str(i))
             get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
             
             y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
@@ -239,15 +226,7 @@ def getconfig2():
                         redirect_url=entry['fields']['redirect_url'],
                         response_type=entry['fields']['response_type']
                     )
-                """tbl_url.objects.update_or_create(uuid=entry['pk'],url_name=entry['fields']['url_name'],url=entry['fields']['url'],
-                                             return_response=entry['fields']['return_response'],
-                                             response_cookie=entry['fields']['response_cookie'],
-                                             response_header=entry['fields']['response_header'],
-                                             response_html=entry['fields']['response_html'],
-                                             response_code=entry['fields']['response_code'],
-                                             redirect_url=entry['fields']['redirect_url'],
-                                             response_type=entry['fields']['response_type'])
-                """
+
             u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
             u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
             #else:
@@ -297,18 +276,26 @@ def getconfig2():
 @background(schedule=60*1)
 def sendLogs():
     print("Sending Logs")
-    defaults = tbl_sensor.objects.get()
-    url = settings.CALLBACKAPI + "/api/logs/" + str(defaults.sensor_id)
-    # get current logs
-    logs = tbl_log.objects.all()
-    # store them as json
-    logs_json = serializers.serialize('json', logs)
-    # send all logs
-    x = requests.post(url, data = logs_json, timeout=5, verify=True)
-    if x.status_code == 200:
-        #delete the logs
-        logs.delete()
-
+    try:
+        defaults = tbl_sensor.objects.get()
+        url = settings.CALLBACKAPI + "/api/logs/" + str(defaults.sensor_id)
+    except ObjectDoesNotExist:
+        print("No default sensor object found.")
+        return
+    all_logs = list(tbl_log.objects.all().order_by('id'))
+    while all_logs:
+        batch_logs = all_logs[:3]
+        all_logs = all_logs[3:]
+        logs_json = serializers.serialize('json', batch_logs)
+        x = requests.post(url, data=logs_json, timeout=5, verify=True)
+        if x.status_code == 200:
+            for log in batch_logs:
+                log.delete()
+            if all_logs:
+                time.sleep(3)
+        else:
+            print(f"Failed to send logs. HTTP Status Code: {x.status_code}")
+            break
     return
 
 @csrf_exempt
