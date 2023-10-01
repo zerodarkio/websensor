@@ -115,7 +115,7 @@ def sendLogs():
     logs = tbl_log.objects.all()
     # store them as json
     logs_json = serializers.serialize('json', logs)
-    print(logs_json)
+    #print(logs_json)
     # send all logs
     x = requests.post(url, data = logs_json, timeout=5, verify=True)
     if x.status_code == 200:
