@@ -522,15 +522,15 @@ def handler404(request, exception,template_name="capture/response.html"):
     # TODO - Make sure to add a Host Header to the DB
 
     # Log the request         
-    log = tbl_log(timestamp=timezone.now(),link_requested=url_Requested,
-                  src_ip=ip,user_agent=user_agent,
-                  request_body=body, request_get_parameters=get_json,
-                  request_post_parameters=post_json,
-                  request_method=requestMethod, request_cookies=cookies,
-                  src_sensor=defaults, honeyurl=url_qs)
-    log.save()
+    """log = tbl_log(timestamp=timezone.now(),link_requested=url_Requested,
+                              src_ip=ip,user_agent=user_agent,
+                              request_body=body, request_get_parameters=get_json,
+                              request_post_parameters=post_json,
+                              request_method=requestMethod, request_cookies=cookies,
+                              src_sensor=defaults, honeyurl=url_qs)
+                log.save()"""
      
-
+    logger(url_Requested,ip,user_agent,body,requestMethod,cookies,defaults,url_qs,Request_Headers,post_json,get_json,base_url)
     # Check if there is Redirct Response
     if url_qs.redirect_url:
         print(url_qs.redirect_url + "/a")
@@ -545,12 +545,13 @@ def handler404(request, exception,template_name="capture/response.html"):
     try:
         if header_json:
             print("get here in headers!")
+            print(f"Headers to be set: {header_json}")
             for h_entry in header_json['headers']:
                 print("Header_Name : " + h_entry['header_Name'])
                 print("Header_Value : " + h_entry['header_value'])
                 response[h_entry['header_Name']] = h_entry['header_value']
     except Exception as e:
-       print("[!] No headers captured: " + str(e))
+       print("[!] No headers set: " + str(e))
 
     # Try and Add Cookies to the Response
     try:
