@@ -353,6 +353,19 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+def get_encoded_headers(request):
+    encoded_headers = {}
+    try:
+        for header, value in request.headers.items():
+            encoded_header = html.escape(header)
+            encoded_value = html.escape(value)
+            encoded_headers[encoded_header] = encoded_value
+        print(f"Encoded headers: {encoded_headers}")
+    except Exception as e:
+        print("[!] Failed to pull headers:" + str(e))
+    
+    return encoded_headers
+
 @csrf_exempt
 @csp_exempt
 def handler404(request, exception,template_name="capture/response.html"):
@@ -430,11 +443,9 @@ def handler404(request, exception,template_name="capture/response.html"):
     # Grab Raw Headers 
     try:
         #Request_Headers = str(request.headers)
-        # Iterate over encoded headers and decode both keys and values
-        decoded_headers = {html.unescape(k): html.unescape(v) for k, v in encoded_headers.items()}
-        
+        encoded_headers = get_encoded_headers(request)
         # Convert the decoded headers to JSON
-        Request_Headers = json.dumps(decoded_headers)
+        Request_Headers = json.dumps(encoded_headers)
         print(f"Headers from request: {Request_Headers}")
     except Exception as e:
         print("[!] Failed to pull headers:" + str(e))
