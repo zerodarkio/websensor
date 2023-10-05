@@ -1,8 +1,8 @@
-# ZeroDark Web Sensor
+# Zerodark Web Sensor
 
-This is web sensor (honeypot) that can be used with the ZeroDark platform to capture all traffic. It will send the data to the platform for enrichment and storage. It allows for the capture of web traffic over both HTTP and HTTPS.
+This is web sensor (honeypot) that can be used with the ZeroDark platform (https://www.zerodark.io/honeypot-solution.html) to capture web traffic to assist you with building your own threat intel feeds. It will send the data to the platform for enrichment and storage. It allows for the capture of web traffic over both HTTP and HTTPS.
 
-You can sign up on https://beta.zerodark.io/accounts/register/
+You can sign up for free at https://beta.zerodark.io/accounts/register/ to get started.
 
 ## Installation
 
