@@ -285,17 +285,25 @@ def sendLogs():
     all_logs = list(tbl_log.objects.all().order_by('date', 'timestamp'))
     while all_logs:
         batch_logs = all_logs[:3]
+        print(batch_logs)
         all_logs = all_logs[3:]
-        logs_json = serializers.serialize('json', batch_logs)
-        x = requests.post(url, data=logs_json, timeout=5, verify=True)
-        if x.status_code == 200:
-            for log in batch_logs:
-                log.delete()
-            if all_logs:
-                time.sleep(3)
-        else:
-            print(f"Failed to send logs. HTTP Status Code: {x.status_code}")
-            break
+        try:
+            logs_json = serializers.serialize('json', batch_logs)
+        except Exception as e:
+            print(f"Error on serializing logs: {str(e)}")
+        x = requests.post(url, data=logs_json, timeout=10, verify=True)
+        try:
+            print(f"status code: {str(x.status_code)}")
+            if x.status_code == 200:
+                for log in batch_logs:
+                    log.delete()
+                if all_logs:
+                    time.sleep(3)
+            else:
+                print(f"Failed to send logs. HTTP Status Code: {x.status_code}")
+        except Exception as e:
+            print(f"error on sending: {str(e)}")
+            time.sleep(2)
     return
 
 @csrf_exempt
@@ -420,7 +428,12 @@ def handler404(request, exception,template_name="capture/response.html"):
     
     # Grab Raw Headers 
     try:
-        Request_Headers = str(request.headers)
+        #Request_Headers = str(request.headers)
+        # Iterate over encoded headers and decode both keys and values
+        decoded_headers = {html.unescape(k): html.unescape(v) for k, v in encoded_headers.items()}
+        
+        # Convert the decoded headers to JSON
+        Request_Headers = json.dumps(decoded_headers)
         print(f"Headers from request: {Request_Headers}")
     except Exception as e:
         print("[!] Failed to pull headers:" + str(e))
