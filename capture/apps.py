@@ -94,7 +94,7 @@ def register_sensor(sender, **kwargs):
         data['type'] = sen_proto
         data['version'] = settings.SENSOR_VERSION
 
-        res = requests.post(url, data = data, timeout=5, verify=True)
+        res = requests.post(url, data = data, timeout=10, verify=True)
         if res.status_code == 200:
 
             sen_key = str(res.text)

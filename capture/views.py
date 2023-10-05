@@ -26,6 +26,7 @@ import base64
 import sys, traceback
 import requests
 import configparser
+import html
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
