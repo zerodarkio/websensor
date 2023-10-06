@@ -449,7 +449,7 @@ def handler404(request, exception,template_name="capture/response.html"):
         print(f"Headers from request: {Request_Headers}")
     except Exception as e:
         print("[!] Failed to pull headers:" + str(e))
-        Request_Headers = ""
+        Request_Headers = "{}"
 
 
     # TODO - Check for GET Parameters
