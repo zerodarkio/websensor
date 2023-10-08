@@ -168,6 +168,10 @@ class tbl_url(models.Model):
     og_image = models.CharField(max_length=3000, blank=True, null=True, help_text="OpenGraph - image to be displayed")
     og_url = models.CharField(max_length=3000, blank=True, null=True, help_text="OpenGraph - url to provided")
     
+    url_hash = models.CharField(max_length=200,
+                                blank=True,
+                                null=True,
+                                help_text="hash of custom response")
     #linked_profile = models.ForeignKey('tbl_profile', on_delete=models.CASCADE, blank=False)
 
     def __str__(self):
@@ -184,6 +188,7 @@ class tbl_ignore(models.Model):
                            help_text="Log UUID used for unique ignores")
     ip = models.GenericIPAddressField(blank=True, null=True, help_text="IP Address to be ignored")
     url = models.CharField(max_length=100, blank=True, help_text="URL to ignore")
+    headers = models.CharField(max_length=5000,blank=True, help_text="Headers to ignore in json format")
     reason = models.TextField(max_length=250, blank=True, help_text="Reason behind ignoring this URL/IP")
     added_by = models.CharField(max_length=100, blank=True, help_text="Username of person that added")
     
