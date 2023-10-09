@@ -110,7 +110,7 @@ def getconfig2():
             print(type(url_hash))
             print("================")
             if url_uuid and url_hash:
-                if not any(existing_url.uuid == url_uuid and existing_url.hash == url_hash for existing_url in existing_urls):
+                if not any(existing_url.uuid == url_uuid and existing_url.url_hash == url_hash for existing_url in existing_urls):
                     missing_list.append(url_uuid)
 
             print("================ missing_list value in for loop ============")
@@ -131,7 +131,7 @@ def getconfig2():
             
             get_url_data = json.loads(get_url_res)
             print("================ get_url_data value in for loop ============")
-            print(get_url_data)
+            #print(get_url_data)
             print(type(get_url_data))
             print("================")
 
