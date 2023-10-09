@@ -50,7 +50,7 @@ def update_conf(sen_key):
     else:
         print("[i] Sensor.conf not found, unable to write key.")
 
-@background(schedule=60*2)
+@background(schedule=60*5)
 def getconfig():
     getconfig2()
 
@@ -62,13 +62,9 @@ def getconfig2():
     headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
     #try:
     x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
-    print("================ raw response ============")
-    print(x.content)
     res = x.json()
     data = json.loads(res)
-    print("================ All json loads ============")
-    print(data)
-    print("================")
+
     try:
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
@@ -81,48 +77,38 @@ def getconfig2():
     defaults.save()
     # Pull urls 
     if data['urls']:
-        print("================ data[urls] ============")
-        print(data['urls'])
-        print("================")
-        existing_urls = tbl_url.objects.values_list('uuid', 'url_hash', named=True)
+        existing_urls = tbl_url.objects.all().values_list('uuid', 'url_hash', named=True)
         uuid_list = []
         hash_list = []
         missing_list = []
         urls = ast.literal_eval(data['urls'])
-        print("================ urls list ============")
-        print(urls)
-        print(type(urls))
-        print("================")
         for url in urls:
-            print("================ url value in for loop ============")
-            print(url)
-            print(type(url))
-            print("================")
             url_uuid = url.split("'")[1]
             uuid_list.append(url_uuid)
             url_hash = url.split("'")[3]
-            print("================ url_uuid value in for loop ============")
-            print(url_uuid)
-            print(type(url_uuid))
-            print("================")
-            print("================ url_hash value in for loop ============")
-            print(url_hash)
-            print(type(url_hash))
-            print("================")
-            if url_uuid and url_hash:
-                if not any(existing_url.uuid == url_uuid and existing_url.url_hash == url_hash for existing_url in existing_urls):
-                    missing_list.append(url_uuid)
 
-            print("================ missing_list value in for loop ============")
-            print(missing_list)
-            print(type(missing_list))
-            print("================")
-            """urls = json.loads(data['urls'])
-                                    existing_urls = tbl_url.objects.values_list('uuid', flat=True)
-                                    uuid_list = []
-                                    for a in existing_urls:
-                                        uuid_list.append(str(a))
-                                    print(type(existing_urls))"""
+            if url_uuid and url_hash:
+                if not existing_urls:
+                    missing_list.append(url_uuid)
+                else:
+                    uuid_obj = uuid.UUID(url_uuid)
+                    for item in existing_urls:
+                        if item.uuid == uuid_obj:
+                            print(f'UUID: {url_uuid}, URL Hash: {item.url_hash}')
+                            if item.url_hash == url_hash:
+                                print('The hashes match.')
+                                break
+                            else:
+                                print('The hashes do not match.')
+                                missing_list.append(url_uuid)
+                        else:
+                            missing_list.append(url_uuid)
+
+        print("================ missing_list value in for loop ============")
+        print(missing_list)
+        print(type(missing_list))
+        print("================")
+
         for i in missing_list: #urls:
             get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
             
@@ -130,10 +116,6 @@ def getconfig2():
             get_url_res = y.json()
             
             get_url_data = json.loads(get_url_res)
-            print("================ get_url_data value in for loop ============")
-            #print(get_url_data)
-            print(type(get_url_data))
-            print("================")
 
             for entry in get_url_data:
                 try:
@@ -173,14 +155,13 @@ def getconfig2():
             print(str(u_res.status_code))
                 #else:
                 #    print("[i] url already present")
-            existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)
-            uuid_list #= [re.search(r"UUID\('([^']+)", url).group(1) for url in urls]       
-            for ex_url in existing_urls2:
-                if str(ex_url) not in uuid_list:
-                    print("[i] url not found and being deleted: " + str(ex_url))
-                    # Delete the tbl_url_profile object for the url
-                    tbl_url.objects.filter(uuid=ex_url).delete()
-
+        existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)
+        uuid_list #= [re.search(r"UUID\('([^']+)", url).group(1) for url in urls]       
+        for ex_url in existing_urls2:
+            if str(ex_url) not in uuid_list:
+                print("[i] url not found and being deleted: " + str(ex_url))
+                # Delete the tbl_url_profile object for the url
+                tbl_url.objects.filter(uuid=ex_url).delete()
     if data['ignores']:
         existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
         uuid_list = []
@@ -211,13 +192,6 @@ def getconfig2():
     response = HttpResponse("OK")
     response.status_code = 200
     return response
-
-
-
-        # Once set and send server the IDs as confirmation
-    #except Exception as e:
-    #    print("[!] Error on getconfig: " + str(e))
-    #return
 
 # hit via /sendLogs
 @background(schedule=60*1)
