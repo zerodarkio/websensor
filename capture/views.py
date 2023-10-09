@@ -76,11 +76,11 @@ def getconfig2():
     defaults.sensor_key = data['key']
     defaults.save()
     # Pull urls 
+    uuid_list = []
+    hash_list = []
+    missing_list = []
     if data['urls']:
         existing_urls = tbl_url.objects.all().values_list('uuid', 'url_hash', named=True)
-        uuid_list = []
-        hash_list = []
-        missing_list = []
         urls = ast.literal_eval(data['urls'])
         for url in urls:
             url_uuid = url.split("'")[1]
@@ -92,17 +92,18 @@ def getconfig2():
                     missing_list.append(url_uuid)
                 else:
                     uuid_obj = uuid.UUID(url_uuid)
+                    found = False
                     for item in existing_urls:
                         if item.uuid == uuid_obj:
                             print(f'UUID: {url_uuid}, URL Hash: {item.url_hash}')
                             if item.url_hash == url_hash:
                                 print('The hashes match.')
+                                found = True
                                 break
                             else:
                                 print('The hashes do not match.')
-                                missing_list.append(url_uuid)
-                        else:
-                            missing_list.append(url_uuid)
+                    if not found:            
+                        missing_list.append(url_uuid)
 
         print("================ missing_list value in for loop ============")
         print(missing_list)
