@@ -53,7 +53,7 @@ def update_conf(sen_key):
 @background(schedule=60*2)
 def getconfig():
     getconfig2()
-    
+
 
 def getconfig2():
     defaults = tbl_sensor.objects.get()
@@ -123,51 +123,54 @@ def getconfig2():
                                     for a in existing_urls:
                                         uuid_list.append(str(a))
                                     print(type(existing_urls))"""
-            for i in missing_list: #urls:
+        for i in missing_list: #urls:
+            get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
+            
+            y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+            get_url_res = y.json()
+            
+            get_url_data = json.loads(get_url_res)
+            print("================ get_url_data value in for loop ============")
+            print(get_url_data)
+            print(type(get_url_data))
+            print("================")
 
-                get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
-                
-                y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
-                get_url_res = y.json()
-                
-                get_url_data = json.loads(get_url_res)
-
-                for entry in get_url_data:
-                    try:
-                        obj = tbl_url.objects.get(url=entry['fields']['url'])
-                        # Update the existing object
-                        obj.uuid = entry['pk']
-                        obj.url_name = entry['fields']['url_name']
-                        obj.return_response = entry['fields']['return_response']
-                        obj.response_cookie = entry['fields']['response_cookie']
-                        obj.response_header = entry['fields']['response_header']
-                        obj.response_html = entry['fields']['response_html']
-                        obj.response_code = entry['fields']['response_code']
-                        obj.redirect_url = entry['fields']['redirect_url']
-                        obj.response_type = entry['fields']['response_type']
+            for entry in get_url_data:
+                try:
+                    obj = tbl_url.objects.get(url=entry['fields']['url'])
+                    # Update the existing object
+                    obj.uuid = entry['pk']
+                    obj.url_name = entry['fields']['url_name']
+                    obj.return_response = entry['fields']['return_response']
+                    obj.response_cookie = entry['fields']['response_cookie']
+                    obj.response_header = entry['fields']['response_header']
+                    obj.response_html = entry['fields']['response_html']
+                    obj.response_code = entry['fields']['response_code']
+                    obj.redirect_url = entry['fields']['redirect_url']
+                    obj.response_type = entry['fields']['response_type']
+                    url_hash=entry['fields']['url_hash']
+                    # Save the changes
+                    obj.save()
+                    print(f"added {obj.url_name} with uuid: {str(obj.uuid)}")
+                except ObjectDoesNotExist:
+                    # Create a new object
+                    obj = tbl_url.objects.create(
+                        uuid=entry['pk'],
+                        url_name=entry['fields']['url_name'],
+                        url=entry['fields']['url'],
+                        return_response=entry['fields']['return_response'],
+                        response_cookie=entry['fields']['response_cookie'],
+                        response_header=entry['fields']['response_header'],
+                        response_html=entry['fields']['response_html'],
+                        response_code=entry['fields']['response_code'],
+                        redirect_url=entry['fields']['redirect_url'],
+                        response_type=entry['fields']['response_type'],
                         url_hash=entry['fields']['url_hash']
-                        # Save the changes
-                        obj.save()
-                        print(f"added {obj.url_name} with uuid: {str(obj.uuid)}")
-                    except ObjectDoesNotExist:
-                        # Create a new object
-                        obj = tbl_url.objects.create(
-                            uuid=entry['pk'],
-                            url_name=entry['fields']['url_name'],
-                            url=entry['fields']['url'],
-                            return_response=entry['fields']['return_response'],
-                            response_cookie=entry['fields']['response_cookie'],
-                            response_header=entry['fields']['response_header'],
-                            response_html=entry['fields']['response_html'],
-                            response_code=entry['fields']['response_code'],
-                            redirect_url=entry['fields']['redirect_url'],
-                            response_type=entry['fields']['response_type'],
-                            url_hash=entry['fields']['url_hash']
-                        )
+                    )
 
-                u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
-                u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
-                print(str(u_res.status_code))
+            u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
+            u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            print(str(u_res.status_code))
                 #else:
                 #    print("[i] url already present")
             existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)
@@ -205,7 +208,9 @@ def getconfig2():
                 print("[i] Ignore not found and being deleted: " + str(a))
                 tbl_url.objects.filter(uuid=a).delete()
 
-    return
+    response = HttpResponse("OK")
+    response.status_code = 200
+    return response
 
 
 
