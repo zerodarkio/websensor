@@ -52,9 +52,6 @@ def update_conf(sen_key):
 
 @background(schedule=60*2)
 def getconfig():
-    getconfig2()
-
-def getconfig2():
     defaults = tbl_sensor.objects.get()
     print("[i] Checking for Config Changes")
     url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
@@ -63,6 +60,126 @@ def getconfig2():
     x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
     res = x.json()
     data = json.loads(res)
+
+    try:
+        defaults.default_html = data['html']
+        defaults.default_response_code = data['res_code']
+        defaults.default_response_type = data['res_type']
+        defaults.default_redirect_link = data['redirect']
+        defaults.save()
+    except:
+        print("defaults not found")
+    defaults.sensor_key = data['key']
+    defaults.save()
+    print(data)
+    # Pull urls 
+    if data['urls']:
+        print(data['urls'])
+        urls = json.loads(data['urls'])
+        print(str(urls))
+        existing_urls = tbl_url.objects.values_list('uuid', 'url_hash', named=True)
+        uuid_list = []
+        hash_list = []
+        missing_list = []
+
+        for a in existing_urls:
+            uuid_list.append(str(a))
+
+        for i in urls:
+            # need this to make a request for each url
+            print("[i] id = " + str(i))
+            # check if in db if so skip else pull
+            print("[i] update or create urls")
+            #if i not in uuid_list:    
+            get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
+            y = requests.get(get_url, headers=headers_dict, timeout=5, verify=True)
+            get_url_res = y.json()
+            get_url_data = json.loads(get_url_res)
+            for entry in get_url_data:
+                try:
+                    obj = tbl_url.objects.get(url=entry['fields']['url'])
+                    # Update the existing object
+                    obj.uuid = entry['pk']
+                    obj.url_name = entry['fields']['url_name']
+                    obj.return_response = entry['fields']['return_response']
+                    obj.response_cookie = entry['fields']['response_cookie']
+                    obj.response_header = entry['fields']['response_header']
+                    obj.response_html = entry['fields']['response_html']
+                    obj.response_code = entry['fields']['response_code']
+                    obj.redirect_url = entry['fields']['redirect_url']
+                    obj.response_type = entry['fields']['response_type']
+                    # Save the changes
+                    obj.save()
+                except ObjectDoesNotExist:
+                    # Create a new object
+                    obj = tbl_url.objects.create(
+                        uuid=entry['pk'],
+                        url_name=entry['fields']['url_name'],
+                        url=entry['fields']['url'],
+                        return_response=entry['fields']['return_response'],
+                        response_cookie=entry['fields']['response_cookie'],
+                        response_header=entry['fields']['response_header'],
+                        response_html=entry['fields']['response_html'],
+                        response_code=entry['fields']['response_code'],
+                        redirect_url=entry['fields']['redirect_url'],
+                        response_type=entry['fields']['response_type']
+                    )
+
+            u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
+            u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
+            #else:
+                #print("url already present")
+        existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)        
+        for ex_url in existing_urls2:
+            if str(ex_url) not in urls:
+                print("[i] url not found and being deleted: " + str(ex_url))
+                # Delete the tbl_url_profile object for the url
+                tbl_url.objects.filter(uuid=ex_url).delete()
+
+    if data['ignores']:
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+        ignore_uuid_list = []
+        for a in existing_ignores:
+            ignore_uuid_list.append(str(a))
+
+        ignores = json.loads(data['ignores'])
+        ignore_list = []
+        for i in ignores:
+            
+            ignore_list.append(str(i['ignore_id']))
+            if str(i['ignore_id']) not in ignore_uuid_list:
+
+                tbl_ignore.objects.update_or_create(ipk=i['ignore_id'],ip=i['ip'],url=str(i['url']))
+                headers_dict = {'x-zd-api-key': str(defaults.sensor_key)}
+                ig_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/ignore/" + str(i['ignore_id']) + "/ack"
+                ig_res = requests.get(ig_url, headers=headers_dict, timeout=5, verify=True)
+            else:
+                print("[i] Ignore already present")
+
+        existing_ignores = tbl_ignore.objects.values_list('ipk', flat=True)
+
+        for a in existing_ignores:
+            print(str(a))
+            print(ignore_list)
+            if str(a) not in ignore_list:
+                print("[i] Ignore not found and being deleted: " + str(a))
+                tbl_ignore.objects.filter(uuid=a).delete()
+
+
+def getconfig2():
+    defaults = tbl_sensor.objects.get()
+    print("[i] Checking for Config Changes")
+    url = settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id)
+    headers_dict ={'x-zd-api-key': str(defaults.sensor_key)}
+    #try:
+    x = requests.get(url, headers=headers_dict, timeout=5, verify=True)
+    print("================ raw response ============")
+    print(x.content)
+    res = x.json()
+    data = json.loads(res)
+    print("================ All json loads ============")
+    print(data)
+    print("================")
     try:
         defaults.default_html = data['html']
         defaults.default_response_code = data['res_code']
@@ -75,18 +192,47 @@ def getconfig2():
     defaults.save()
     # Pull urls 
     if data['urls']:
+        print("================ data[urls] ============")
+        print(data['urls'])
+        print("================")
         existing_urls = tbl_url.objects.values_list('uuid', 'url_hash', named=True)
         uuid_list = []
         hash_list = []
         missing_list = []
         urls = ast.literal_eval(data['urls'])
+        print("================ urls list ============")
+        print(urls)
+        print(type(urls))
+        print("================")
         for url in urls:
+            print("================ url value in for loop ============")
+            print(url)
+            print(type(url))
+            print("================")
             url_uuid = url.split("'")[1]
             url_hash = url.split("'")[3]
+            print("================ url_uuid value in for loop ============")
+            print(url_uuid)
+            print(type(url_uuid))
+            print("================")
+            print("================ url_hash value in for loop ============")
+            print(url_hash)
+            print(type(url_hash))
+            print("================")
             if url_uuid and url_hash:
                 if not any(existing_url.uuid == url_uuid and existing_url.hash == url_hash for existing_url in existing_urls):
                     missing_list.append(url_uuid)
 
+            print("================ missing_list value in for loop ============")
+            print(missing_list)
+            print(type(missing_list))
+            print("================")
+            """urls = json.loads(data['urls'])
+                                    existing_urls = tbl_url.objects.values_list('uuid', flat=True)
+                                    uuid_list = []
+                                    for a in existing_urls:
+                                        uuid_list.append(str(a))
+                                    print(type(existing_urls))"""
             for i in missing_list: #urls:
 
                 get_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/"
@@ -109,6 +255,7 @@ def getconfig2():
                         obj.response_code = entry['fields']['response_code']
                         obj.redirect_url = entry['fields']['redirect_url']
                         obj.response_type = entry['fields']['response_type']
+                        url_hash=entry['fields']['url_hash']
                         # Save the changes
                         obj.save()
                         print(f"added {obj.url_name} with uuid: {str(obj.uuid)}")
@@ -124,12 +271,14 @@ def getconfig2():
                             response_html=entry['fields']['response_html'],
                             response_code=entry['fields']['response_code'],
                             redirect_url=entry['fields']['redirect_url'],
-                            response_type=entry['fields']['response_type']
+                            response_type=entry['fields']['response_type'],
+                            url_hash=entry['fields']['url_hash']
                         )
 
                 u_url =  settings.CALLBACKAPI + "/api/config/" + str(defaults.sensor_id) + "/url/" + str(i) + "/ack"
                 u_res = requests.get(u_url, headers=headers_dict, timeout=5, verify=True)
-
+                #else:
+                #    print("[i] url already present")
             existing_urls2 = tbl_url.objects.values_list('uuid', flat=True)
             uuid_list = [re.search(r"UUID\('([^']+)", url).group(1) for url in urls]       
             for ex_url in existing_urls2:
@@ -164,6 +313,13 @@ def getconfig2():
             if str(a) not in ignore_list:
                 print("[i] Ignore not found and being deleted: " + str(a))
                 tbl_url.objects.filter(uuid=a).delete()
+
+
+
+        # Once set and send server the IDs as confirmation
+    #except Exception as e:
+    #    print("[!] Error on getconfig: " + str(e))
+    #return
 
 # hit via /sendLogs
 @background(schedule=60*1)
